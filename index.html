@@ -149,6 +149,8 @@
     let direction = 'right';
     let food = randomFood();
     let score = 0;
+    let obstacles = [];
+    setInterval(addObstacle, 5000);
 
     function randomFood() {
       return {
@@ -171,6 +173,12 @@
       snake = [{ x: 150, y: 150 }];
       direction = 'right';
       food = randomFood();
+      obstacles = [];
+      score = 0;
+      scoreEl.textContent = score;
+    }];
+      direction = 'right';
+      food = randomFood();
       score = 0;
       scoreEl.textContent = score;
     }
@@ -184,10 +192,12 @@
       if (direction === 'left') head.x -= grid;
       if (direction === 'right') head.x += grid;
 
+      // collision wall & self & obstacle
       if (
         head.x < 0 || head.y < 0 ||
         head.x >= canvas.width || head.y >= canvas.height ||
-        snake.some((s, i) => i !== 0 && s.x === head.x && s.y === head.y)
+        snake.some((s, i) => i !== 0 && s.x === head.x && s.y === head.y) ||
+        obstacles.some(o => o.x === head.x && o.y === head.y)
       ) {
         alert('Game Over');
         resetGame();
@@ -204,16 +214,57 @@
         snake.pop();
       }
 
+      // food
       ctx.fillStyle = '#ef4444';
       ctx.fillRect(food.x, food.y, grid, grid);
 
+      // obstacles
+      ctx.fillStyle = '#38bdf8';
+      obstacles.forEach(o => ctx.fillRect(o.x, o.y, grid, grid));
+
+      // snake
       snake.forEach((part, i) => {
+        ctx.fillStyle = i === 0 ? '#22c55e' : '#16a34a';
+        ctx.fillRect(part.x, part.y, grid - 1, grid - 1);
+      });((part, i) => {
         ctx.fillStyle = i === 0 ? '#22c55e' : '#16a34a';
         ctx.fillRect(part.x, part.y, grid - 1, grid - 1);
       });
     }
 
     setInterval(gameLoop, 140);
+
+    function addObstacle() {
+      const length = Math.random() < 0.5 ? 3 : 5; // 3 atau 5 blok
+      const horizontal = Math.random() < 0.5;
+
+      const start = {
+        x: Math.floor(Math.random() * (canvas.width / grid)) * grid,
+        y: Math.floor(Math.random() * (canvas.height / grid)) * grid
+      };
+
+      for (let i = 0; i < length; i++) {
+        const pos = {
+          x: start.x + (horizontal ? i * grid : 0),
+          y: start.y + (horizontal ? 0 : i * grid)
+        };
+
+        // cek keluar canvas
+        if (
+          pos.x < 0 || pos.y < 0 ||
+          pos.x >= canvas.width || pos.y >= canvas.height
+        ) continue;
+
+        // cek tabrakan
+        if (
+          snake.some(s => s.x === pos.x && s.y === pos.y) ||
+          food.x === pos.x && food.y === pos.y ||
+          obstacles.some(o => o.x === pos.x && o.y === pos.y)
+        ) continue;
+
+        obstacles.push(pos);
+      }
+    }
   </script>
 </body>
 </html>
