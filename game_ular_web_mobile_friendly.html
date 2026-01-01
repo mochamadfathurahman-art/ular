@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Game Ular</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #222;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    h1 { margin: 10px 0; }
+    canvas {
+      background: #000;
+      border: 2px solid #0f0;
+    }
+    .controls {
+      margin-top: 15px;
+      display: grid;
+      grid-template-columns: 60px 60px 60px;
+      grid-template-rows: 60px 60px 60px;
+      gap: 5px;
+    }
+    .controls button {
+      font-size: 20px;
+      border: none;
+      border-radius: 10px;
+      background: #0f0;
+      color: #000;
+      cursor: pointer;
+    }
+    .controls button:active {
+      background: #9f9;
+    }
+  </style>
+</head>
+<body>
+  <h1>🐍 Game Ular</h1>
+  <canvas id="game" width="300" height="300"></canvas>
+
+  <!-- Kontrol untuk HP -->
+  <div class="controls">
+    <div></div>
+    <button onclick="setDirection('up')">⬆️</button>
+    <div></div>
+    <button onclick="setDirection('left')">⬅️</button>
+    <div></div>
+    <button onclick="setDirection('right')">➡️</button>
+    <div></div>
+    <button onclick="setDirection('down')">⬇️</button>
+    <div></div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
+
+    const grid = 15;
+    let snake = [{ x: 150, y: 150 }];
+    let direction = 'right';
+    let food = randomFood();
+
+    function randomFood() {
+      return {
+        x: Math.floor(Math.random() * (canvas.width / grid)) * grid,
+        y: Math.floor(Math.random() * (canvas.height / grid)) * grid
+      };
+    }
+
+    function setDirection(dir) {
+      direction = dir;
+    }
+
+    function gameLoop() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Gerakkan ular
+      const head = { ...snake[0] };
+      if (direction === 'up') head.y -= grid;
+      if (direction === 'down') head.y += grid;
+      if (direction === 'left') head.x -= grid;
+      if (direction === 'right') head.x += grid;
+
+      // Game over jika nabrak tembok
+      if (
+        head.x < 0 || head.y < 0 ||
+        head.x >= canvas.width || head.y >= canvas.height
+      ) {
+        alert('Game Over');
+        snake = [{ x: 150, y: 150 }];
+        direction = 'right';
+        food = randomFood();
+        return;
+      }
+
+      snake.unshift(head);
+
+      // Makan makanan
+      if (head.x === food.x && head.y === food.y) {
+        food = randomFood();
+      } else {
+        snake.pop();
+      }
+
+      // Gambar makanan
+      ctx.fillStyle = 'red';
+      ctx.fillRect(food.x, food.y, grid, grid);
+
+      // Gambar ular
+      ctx.fillStyle = 'lime';
+      snake.forEach(part => {
+        ctx.fillRect(part.x, part.y, grid - 1, grid - 1);
+      });
+    }
+
+    setInterval(gameLoop, 150);
+  </script>
+</body>
+</html>
